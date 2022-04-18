@@ -113,7 +113,20 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
                 break;
             }
         }
-        result.push(cur);
+        if cur == '\\' {
+            if iter.peek().is_none() {
+                return Err(FormError::UnBalancedBackSlash);
+            } else {
+                let next = iter.next().unwrap();
+                match next {
+                    '\\' | '#' => result.push(next),
+                    'n' => result.push('\n'),
+                    _ => return Err(FormError::UnBalancedBackSlash),
+                }
+            }
+        } else {
+            result.push(cur);
+        }
     }
     Err(FormError::MissingTrailingDoubleQuote)
 }

@@ -1,4 +1,5 @@
 use crate::Form;
+use std::ops::Add;
 
 pub fn print(form: &Form) {
     println!("{}", format(form))
@@ -18,7 +19,24 @@ fn format(form: &Form) -> String {
         }
         Form::False => "false".to_string(),
         Form::Nil => "Nil".to_string(),
-        Form::FormString(a_string) => format!(r#""{}""#, a_string),
+        Form::FormString(source) => escape_str(source),
         Form::True => "true".to_string(),
     }
+}
+
+fn escape_str(source: &String) -> String {
+    let mut result = String::from('"');
+    for c in source.chars() {
+        if c == '\n' {
+            result.push('\\');
+            result.push('n');
+            continue;
+        }
+        if c == '"' || c == '\\' {
+            result.push('\\');
+        }
+        result.push(c);
+    }
+    result.push('"');
+    result
 }

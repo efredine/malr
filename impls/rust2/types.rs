@@ -17,4 +17,5 @@ pub enum FormError {
     MissingOpeningBracket,
     MissingTrailingBracket,
     MissingTrailingDoubleQuote,
+    UnBalancedBackSlash,
 }
