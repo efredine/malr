@@ -16,9 +16,9 @@ fn main() -> io::Result<()> {
         let mut reader = Reader::new(&line_result);
         while let Some(form_result) = reader.read_form() {
             match form_result {
-                Ok(form) => println!("{:?}", form),
+                Ok(form) => print(eval(&form)),
                 Err(err) => {
-                    println!("Error: {}", err);
+                    eprintln!("Error: {}", err);
                     exit(1);
                 }
             }
@@ -33,10 +33,21 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
     lines.next()
 }
 
-fn eval(str: &str) -> &str {
-    str
+fn eval<'a>(form: &'a Form) -> &'a Form<'a> {
+    form
 }
 
-fn print(str: &str) {
-    println!("{}", str)
+fn print(form: &Form) {
+    println!("{}", format(form))
+}
+
+fn format(form: &Form) -> String {
+    match form {
+        Form::Int(i) => i.to_string(),
+        Form::Symbol(s) => s.to_string(),
+        Form::List(l) => {
+            let string_list: Vec<String> = l.iter().map(format).collect();
+            format!("({})", string_list.join(" "))
+        }
+    }
 }
