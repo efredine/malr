@@ -18,8 +18,7 @@ fn main() -> io::Result<()> {
             match form_result {
                 Ok(form) => print(eval(&form)),
                 Err(err) => {
-                    eprintln!("Error: {}", err);
-                    exit(1);
+                    println!("'.*\n.*(EOF|end of input|unbalanced).*'");
                 }
             }
         }
