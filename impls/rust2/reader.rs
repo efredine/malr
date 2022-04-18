@@ -43,7 +43,7 @@ impl<'a> Reader<'a> {
             None => None,
             Some(token) => match token.as_str() {
                 "(" => self.read_list(),
-                ")" => return Some(Err(String::from("Missing opening bracket."))),
+                ")" => Some(Err(String::from("Missing opening bracket."))),
                 _ => self.read_atom(),
             },
         }
@@ -58,25 +58,21 @@ impl<'a> Reader<'a> {
                     self.iter.next();
                     return Some(Ok(Form::List(list)));
                 }
-                _ => {
-                    let next_form_option = self.read_form();
-                    match next_form_option {
-                        None => break,
-                        Some(next_form_result) => match next_form_result {
-                            Ok(form) => list.push(form),
-                            Err(error) => return Some(Err(error)),
-                        },
-                    }
-                }
+                _ => match self.read_form() {
+                    None => break,
+                    Some(next_form_result) => match next_form_result {
+                        Ok(form) => list.push(form),
+                        Err(error) => return Some(Err(error)),
+                    },
+                },
             }
         }
         Some(Err(String::from("Missing closing bracket")))
     }
 
     fn read_atom(&mut self) -> Option<Result<Form<'a>, String>> {
-        match self.iter.next() {
-            None => None,
-            Some(token) => Some(Ok(Form::Symbol(token.as_str()))),
-        }
+        self.iter
+            .next()
+            .map(|token| Ok(Form::Symbol(token.as_str())))
     }
 }
