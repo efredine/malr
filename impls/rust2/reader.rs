@@ -69,6 +69,15 @@ impl<'a> Reader<'a> {
             "false" => Ok(Form::False),
             "true" => Ok(Form::True),
             "Nil" => Ok(Form::Nil),
+            keyword if keyword.starts_with(":") => {
+                if keyword.len() == 1 {
+                    Err(FormError::MissingKeywordValue)
+                } else {
+                    let mut str = keyword.to_string();
+                    str.remove(0);
+                    Ok(Form::Keyword(str))
+                }
+            }
             a_str if a_str.starts_with(r#"""#) => parse_string(a_str),
             numeric if numeric.parse::<i64>().is_ok() => {
                 Ok(Form::Int(numeric.parse::<i64>().unwrap()))

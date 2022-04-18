@@ -3,13 +3,14 @@ use regex::Match;
 #[derive(Debug)]
 pub enum Form<'a> {
     False,
-    Int(i64),
-    List(Vec<Form<'a>>),
-    Vector(Vec<Form<'a>>),
-    Nil,
     FormString(String),
+    Int(i64),
+    Keyword(String),
+    List(Vec<Form<'a>>),
+    Nil,
     Symbol(&'a str),
     True,
+    Vector(Vec<Form<'a>>),
 }
 
 #[derive(Debug)]
@@ -18,4 +19,5 @@ pub enum FormError {
     MissingTrailingBracket,
     MissingTrailingDoubleQuote,
     UnBalancedBackSlash,
+    MissingKeywordValue,
 }
