@@ -1,6 +1,8 @@
+mod printer;
 mod reader;
 mod types;
 
+use crate::printer::print;
 use crate::reader::Reader;
 use crate::types::Form;
 use std::io;
@@ -34,19 +36,4 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
 
 fn eval<'a>(form: &'a Form) -> &'a Form<'a> {
     form
-}
-
-fn print(form: &Form) {
-    println!("{}", format(form))
-}
-
-fn format(form: &Form) -> String {
-    match form {
-        Form::Int(i) => i.to_string(),
-        Form::Symbol(s) => s.to_string(),
-        Form::List(l) => {
-            let string_list: Vec<String> = l.iter().map(format).collect();
-            format!("({})", string_list.join(" "))
-        }
-    }
 }

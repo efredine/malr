@@ -1,6 +1,10 @@
 #[derive(Debug)]
 pub enum Form<'a> {
-    Int(isize),
-    Symbol(&'a str),
+    False,
+    Int(i64),
     List(Vec<Form<'a>>),
+    Nil,
+    FormString(String),
+    Symbol(&'a str),
+    True,
 }
