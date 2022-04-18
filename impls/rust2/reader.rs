@@ -7,9 +7,11 @@ use std::vec::IntoIter;
 
 pub struct Reader<'a> {
     text: &'a str,
-    // pub tokens: Vec<Match<'a>>,
     pub iter: Peekable<IntoIter<Match<'a>>>,
 }
+
+static VEC_RIGHT: &str = "]";
+static LIST_RIGHT: &str = ")";
 
 impl<'a> Reader<'a> {
     pub fn new(text: &'a str) -> Reader<'a> {
@@ -22,21 +24,32 @@ impl<'a> Reader<'a> {
         match self.iter.peek() {
             None => None,
             Some(token) => match token.as_str() {
-                "(" => self.read_list(),
-                ")" => Some(Err(String::from("Missing opening bracket."))),
+                "(" => self.read_list(LIST_RIGHT),
+                "[" => self.read_list(VEC_RIGHT),
+                ")" | "]" => Some(Err(String::from("Missing opening bracket."))),
                 _ => self.read_atom(),
             },
         }
     }
 
-    fn read_list(&mut self) -> Option<Result<Form<'a>, String>> {
+    fn read_list(&mut self, expected_close: &str) -> Option<Result<Form<'a>, String>> {
+        // consume opening character
         self.iter.next();
         let mut list: Vec<Form> = Vec::new();
         while let Some(next_token) = self.iter.peek() {
             match next_token.as_str() {
-                ")" => {
+                close if close == "]" || close == ")" => {
+                    // consume closing bracket
                     self.iter.next();
-                    return Some(Ok(Form::List(list)));
+                    return if close == expected_close {
+                        if expected_close == LIST_RIGHT {
+                            Some(Ok(Form::List(list)))
+                        } else {
+                            Some(Ok(Form::Vector(list)))
+                        }
+                    } else {
+                        Some(Err(String::from("Missing closing bracket.")))
+                    };
                 }
                 _ => match self.read_form() {
                     None => break,

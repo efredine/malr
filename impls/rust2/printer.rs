@@ -12,6 +12,10 @@ fn format(form: &Form) -> String {
             let string_list: Vec<String> = l.iter().map(format).collect();
             format!("({})", string_list.join(" "))
         }
+        Form::Vector(v) => {
+            let vector_list: Vec<String> = v.iter().map(format).collect();
+            format!("[{}]", vector_list.join(" "))
+        }
         Form::False => "false".to_string(),
         Form::Nil => "Nil".to_string(),
         Form::FormString(a_string) => format!(r#""{}""#, a_string),
