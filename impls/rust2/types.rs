@@ -1,3 +1,5 @@
+use regex::Match;
+
 #[derive(Debug)]
 pub enum Form<'a> {
     False,
@@ -8,4 +10,11 @@ pub enum Form<'a> {
     FormString(String),
     Symbol(&'a str),
     True,
+}
+
+#[derive(Debug)]
+pub enum FormError {
+    MissingOpeningBracket,
+    MissingTrailingBracket,
+    MissingTrailingDoubleQuote,
 }

@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
         while let Some(form_result) = reader.read_form() {
             match form_result {
                 Ok(form) => print(eval(&form)),
-                Err(err) => {
+                Err(_) => {
                     println!("'.*\n.*(EOF|end of input|unbalanced).*'");
                 }
             }

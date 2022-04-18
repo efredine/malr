@@ -1,3 +1,4 @@
+use crate::types::FormError;
 use crate::Form;
 use crate::Form::FormString;
 use lazy_static::lazy_static;
@@ -20,19 +21,19 @@ impl<'a> Reader<'a> {
         Reader { text, iter }
     }
 
-    pub fn read_form(&mut self) -> Option<Result<Form<'a>, String>> {
+    pub fn read_form(&mut self) -> Option<Result<Form<'a>, FormError>> {
         match self.iter.peek() {
             None => None,
             Some(token) => match token.as_str() {
                 "(" => self.read_list(LIST_RIGHT),
                 "[" => self.read_list(VEC_RIGHT),
-                ")" | "]" => Some(Err(String::from("Missing opening bracket."))),
+                ")" | "]" => Some(Err(FormError::MissingOpeningBracket)),
                 _ => self.read_atom(),
             },
         }
     }
 
-    fn read_list(&mut self, expected_close: &str) -> Option<Result<Form<'a>, String>> {
+    fn read_list(&mut self, expected_close: &str) -> Option<Result<Form<'a>, FormError>> {
         // consume opening character
         self.iter.next();
         let mut list: Vec<Form> = Vec::new();
@@ -48,7 +49,7 @@ impl<'a> Reader<'a> {
                             Some(Ok(Form::Vector(list)))
                         }
                     } else {
-                        Some(Err(String::from("Missing closing bracket.")))
+                        Some(Err(FormError::MissingTrailingBracket))
                     };
                 }
                 _ => match self.read_form() {
@@ -60,10 +61,10 @@ impl<'a> Reader<'a> {
                 },
             }
         }
-        Some(Err(String::from("Missing closing bracket")))
+        Some(Err(FormError::MissingTrailingBracket))
     }
 
-    fn read_atom(&mut self) -> Option<Result<Form<'a>, String>> {
+    fn read_atom(&mut self) -> Option<Result<Form<'a>, FormError>> {
         self.iter.next().map(|token| match token.as_str() {
             "false" => Ok(Form::False),
             "true" => Ok(Form::True),
@@ -98,7 +99,7 @@ fn tokenize(text: &str) -> Vec<Match> {
         .collect()
 }
 
-fn parse_string(a_str: &str) -> Result<Form, String> {
+fn parse_string(a_str: &str) -> Result<Form, FormError> {
     let mut result = String::new();
     let mut iter = a_str.chars().peekable();
 
@@ -114,5 +115,5 @@ fn parse_string(a_str: &str) -> Result<Form, String> {
         }
         result.push(cur);
     }
-    Err(String::from("Missing trailing double quote"))
+    Err(FormError::MissingTrailingDoubleQuote)
 }
