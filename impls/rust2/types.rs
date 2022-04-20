@@ -1,12 +1,13 @@
-use regex::Match;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum Form<'a> {
     False,
-    FormString(String),
+    String(String),
     Int(i64),
     Keyword(String),
     List(Vec<Form<'a>>),
+    Map(HashMap<String, Form<'a>>),
     Nil,
     Symbol(&'a str),
     True,
@@ -20,4 +21,6 @@ pub enum FormError {
     MissingTrailingDoubleQuote,
     UnBalancedBackSlash,
     MissingKeywordValue,
+    UnBalancedMap,
+    InvalidKey,
 }

@@ -1,8 +1,8 @@
 use crate::types::FormError;
 use crate::Form;
-use crate::Form::FormString;
 use lazy_static::lazy_static;
 use regex::{Match, Regex};
+use std::collections::HashMap;
 use std::iter::Peekable;
 use std::vec::IntoIter;
 
@@ -13,6 +13,7 @@ pub struct Reader<'a> {
 
 static VEC_RIGHT: &str = "]";
 static LIST_RIGHT: &str = ")";
+static MAP_RIGHT: &str = "}";
 
 impl<'a> Reader<'a> {
     pub fn new(text: &'a str) -> Reader<'a> {
@@ -27,7 +28,8 @@ impl<'a> Reader<'a> {
             Some(token) => match token.as_str() {
                 "(" => self.read_list(LIST_RIGHT),
                 "[" => self.read_list(VEC_RIGHT),
-                ")" | "]" => Some(Err(FormError::MissingOpeningBracket)),
+                "{" => self.read_list(MAP_RIGHT),
+                ")" | "]" | "}" => Some(Err(FormError::MissingOpeningBracket)),
                 _ => self.read_atom(),
             },
         }
@@ -39,14 +41,16 @@ impl<'a> Reader<'a> {
         let mut list: Vec<Form> = Vec::new();
         while let Some(next_token) = self.iter.peek() {
             match next_token.as_str() {
-                close if close == "]" || close == ")" => {
+                close if close == "]" || close == ")" || close == "}" => {
                     // consume closing bracket
                     self.iter.next();
                     return if close == expected_close {
-                        if expected_close == LIST_RIGHT {
-                            Some(Ok(Form::List(list)))
-                        } else {
+                        if expected_close == VEC_RIGHT {
                             Some(Ok(Form::Vector(list)))
+                        } else if expected_close == MAP_RIGHT {
+                            map_from_vec(list)
+                        } else {
+                            Some(Ok(Form::List(list)))
                         }
                     } else {
                         Some(Err(FormError::MissingTrailingBracket))
@@ -117,7 +121,7 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
     while let Some(cur) = iter.next() {
         if iter.peek().is_none() {
             if cur == '"' {
-                return Ok(Form::FormString(result));
+                return Ok(Form::String(result));
             } else {
                 break;
             }
@@ -138,4 +142,21 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
         }
     }
     Err(FormError::MissingTrailingDoubleQuote)
+}
+
+fn map_from_vec(list: Vec<Form>) -> Option<Result<Form, FormError>> {
+    let mut map: HashMap<String, Form> = HashMap::new();
+    let mut iter = list.into_iter();
+    while let Some(key) = iter.next() {
+        if let Some(value) = iter.next() {
+            match key {
+                Form::String(s) => map.insert(s, value),
+                Form::Keyword(s) => map.insert(s, value),
+                _ => return Some(Err(FormError::InvalidKey)),
+            };
+        } else {
+            return Some(Err(FormError::UnBalancedMap));
+        };
+    }
+    Some(Ok(Form::Map(map)))
 }

@@ -7,7 +7,6 @@ use crate::reader::Reader;
 use crate::types::Form;
 use std::io;
 use std::io::{BufRead, Lines, StdinLock, Write};
-use std::process::exit;
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();

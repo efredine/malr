@@ -1,5 +1,4 @@
 use crate::Form;
-use std::ops::Add;
 
 pub fn print(form: &Form) {
     println!("{}", format(form))
@@ -8,12 +7,19 @@ pub fn print(form: &Form) {
 fn format(form: &Form) -> String {
     match form {
         Form::False => "false".to_string(),
-        Form::FormString(source) => escape_str(source),
+        Form::String(source) => escape_str(source),
         Form::Int(i) => i.to_string(),
         Form::Keyword(str) => format!(":{}", str),
         Form::List(l) => {
             let string_list: Vec<String> = l.iter().map(format).collect();
             format!("({})", string_list.join(" "))
+        }
+        Form::Map(m) => {
+            let pairs: Vec<String> = m
+                .iter()
+                .map(|(k, v)| format!("{} {}", escape_str(k), format(v)))
+                .collect();
+            format!("{{{}}}", pairs.join(" "))
         }
         Form::Nil => "Nil".to_string(),
         Form::Symbol(s) => s.to_string(),
