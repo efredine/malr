@@ -95,7 +95,7 @@ impl<'a> Reader<'a> {
                     Ok(Form::Keyword(str))
                 }
             }
-            a_str if a_str.starts_with(r#"""#) => parse_string(a_str),
+            a_string if a_string.starts_with(r#"""#) => parse_string(a_string),
             numeric if numeric.parse::<i64>().is_ok() => {
                 Ok(Form::Int(numeric.parse::<i64>().unwrap()))
             }
@@ -162,7 +162,7 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
     let mut result = String::new();
     let mut iter = a_str.chars().peekable();
 
-    // skip leading character double quote
+    // consume leading character double quote
     iter.next();
     while let Some(cur) = iter.next() {
         if iter.peek().is_none() {

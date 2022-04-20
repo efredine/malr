@@ -7,13 +7,20 @@ pub fn print(form: &Form) {
 
 fn format(form: &Form) -> String {
     match form {
+        Form::Nil => "Nil".to_string(),
+        Form::True => "true".to_string(),
         Form::False => "false".to_string(),
-        Form::String(source) => format_string(source),
         Form::Int(i) => i.to_string(),
-        Form::Keyword(str) => format_string(str),
+        Form::Symbol(symbol) => symbol.to_string(),
+        Form::String(source) => format_string(source),
+        Form::Keyword(keyword) => format_string(keyword),
         Form::List(l) => {
             let string_list: Vec<String> = l.iter().map(format).collect();
             format!("({})", string_list.join(" "))
+        }
+        Form::Vector(v) => {
+            let vector_list: Vec<String> = v.iter().map(format).collect();
+            format!("[{}]", vector_list.join(" "))
         }
         Form::Map(m) => {
             let pairs: Vec<String> = m
@@ -21,13 +28,6 @@ fn format(form: &Form) -> String {
                 .map(|(k, v)| format!("{} {}", format_string(k), format(v)))
                 .collect();
             format!("{{{}}}", pairs.join(" "))
-        }
-        Form::Nil => "Nil".to_string(),
-        Form::Symbol(s) => s.to_string(),
-        Form::True => "true".to_string(),
-        Form::Vector(v) => {
-            let vector_list: Vec<String> = v.iter().map(format).collect();
-            format!("[{}]", vector_list.join(" "))
         }
     }
 }
