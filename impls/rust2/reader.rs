@@ -104,15 +104,15 @@ impl<'a> Reader<'a> {
     }
 
     fn read_macro(&mut self, macro_fn: &'static str) -> Option<Result<Form<'a>, FormError>> {
+        // consume macro token
         self.iter.next();
-        let argument_option = self.read_form();
-        return if argument_option.is_none() {
-            Some(Err(FormError::MissingMacroArgument))
-        } else {
+        return if let Some(argument_result) = self.read_form() {
             Some(Ok(Form::List(vec![
                 Form::Symbol(macro_fn),
-                argument_option.unwrap().ok()?,
+                argument_result.ok()?,
             ])))
+        } else {
+            Some(Err(FormError::MissingMacroArgument))
         };
     }
 }
