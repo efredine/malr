@@ -132,7 +132,7 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
             } else {
                 let next = iter.next().unwrap();
                 match next {
-                    '\\' | '#' => result.push(next),
+                    '\\' | '"' => result.push(next),
                     'n' => result.push('\n'),
                     _ => return Err(FormError::UnBalancedBackSlash),
                 }
