@@ -40,7 +40,7 @@ impl<'a> Reader<'a> {
                 "`" => self.read_macro(QUASI_QUOTE),
                 "~@" => self.read_macro(SPLICE_UNQUOTE),
                 "@" => self.read_macro(DEREF),
-                "^" => self.read_macro(WITH_META),
+                "^" => self.read_meta_macro(),
                 ")" | "]" | "}" => Some(Err(FormError::MissingOpeningBracket)),
                 _ => self.read_atom(),
             },
@@ -113,6 +113,26 @@ impl<'a> Reader<'a> {
             ])))
         } else {
             Some(Err(FormError::MissingMacroArgument))
+        };
+    }
+
+    fn read_meta_macro(&mut self) -> Option<Result<Form<'a>, FormError>> {
+        // consume macro token
+        self.iter.next();
+        return if self.iter.peek().is_none() {
+            Some(Err(FormError::MissingMacroArgument))
+        } else {
+            let mut list: Vec<Form> = Vec::new();
+            while let Some(form_result) = self.read_form() {
+                list.push(form_result.ok()?)
+            }
+            if list.len() != 2 {
+                Some(Err(FormError::InvalidMetaMacro))
+            } else {
+                list.push(Form::Symbol(WITH_META));
+                list.reverse();
+                Some(Ok(Form::List(list)))
+            }
         };
     }
 }

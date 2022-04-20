@@ -26,4 +26,5 @@ pub enum FormError {
     UnBalancedMap,
     InvalidKey,
     MissingMacroArgument,
+    InvalidMetaMacro,
 }
