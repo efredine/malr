@@ -14,6 +14,13 @@ static VEC_RIGHT: &str = "]";
 static LIST_RIGHT: &str = ")";
 static MAP_RIGHT: &str = "}";
 
+static QUOTE: &str = "quote";
+static UNQUOTE: &str = "unquote";
+static QUASI_QUOTE: &str = "quasiquote";
+static SPLICE_UNQUOTE: &str = "splice-unquote";
+static DEREF: &str = "deref";
+static WITH_META: &str = "with-meta";
+
 impl<'a> Reader<'a> {
     pub fn new(text: &'a str) -> Reader<'a> {
         let tokens = tokenize(text);
@@ -28,6 +35,12 @@ impl<'a> Reader<'a> {
                 "(" => self.read_list(LIST_RIGHT),
                 "[" => self.read_list(VEC_RIGHT),
                 "{" => self.read_list(MAP_RIGHT),
+                "'" => self.read_macro(QUOTE),
+                "~" => self.read_macro(UNQUOTE),
+                "`" => self.read_macro(QUASI_QUOTE),
+                "~@" => self.read_macro(SPLICE_UNQUOTE),
+                "@" => self.read_macro(DEREF),
+                "^" => self.read_macro(WITH_META),
                 ")" | "]" | "}" => Some(Err(FormError::MissingOpeningBracket)),
                 _ => self.read_atom(),
             },
@@ -88,6 +101,19 @@ impl<'a> Reader<'a> {
             }
             symbol => Ok(Form::Symbol(symbol)),
         })
+    }
+
+    fn read_macro(&mut self, macro_fn: &'static str) -> Option<Result<Form<'a>, FormError>> {
+        self.iter.next();
+        let argument_option = self.read_form();
+        return if argument_option.is_none() {
+            Some(Err(FormError::MissingMacroArgument))
+        } else {
+            Some(Ok(Form::List(vec![
+                Form::Symbol(macro_fn),
+                argument_option.unwrap().ok()?,
+            ])))
+        };
     }
 }
 

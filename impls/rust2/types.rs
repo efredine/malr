@@ -25,4 +25,5 @@ pub enum FormError {
     MissingKeywordValue,
     UnBalancedMap,
     InvalidKey,
+    MissingMacroArgument,
 }
