@@ -1,4 +1,4 @@
-use crate::types::FormError;
+use crate::types::{FormError, KEYWORD_PREFIX};
 use crate::Form;
 use lazy_static::lazy_static;
 use regex::{Match, Regex};
@@ -7,7 +7,6 @@ use std::iter::Peekable;
 use std::vec::IntoIter;
 
 pub struct Reader<'a> {
-    text: &'a str,
     pub iter: Peekable<IntoIter<Match<'a>>>,
 }
 
@@ -19,7 +18,7 @@ impl<'a> Reader<'a> {
     pub fn new(text: &'a str) -> Reader<'a> {
         let tokens = tokenize(text);
         let iter = tokens.into_iter().peekable();
-        Reader { text, iter }
+        Reader { iter }
     }
 
     pub fn read_form(&mut self) -> Option<Result<Form<'a>, FormError>> {
@@ -79,6 +78,7 @@ impl<'a> Reader<'a> {
                 } else {
                     let mut str = keyword.to_string();
                     str.remove(0);
+                    str.insert(0, KEYWORD_PREFIX);
                     Ok(Form::Keyword(str))
                 }
             }

@@ -1,3 +1,4 @@
+use crate::types::KEYWORD_PREFIX;
 use crate::Form;
 
 pub fn print(form: &Form) {
@@ -7,9 +8,9 @@ pub fn print(form: &Form) {
 fn format(form: &Form) -> String {
     match form {
         Form::False => "false".to_string(),
-        Form::String(source) => escape_str(source),
+        Form::String(source) => format_string(source),
         Form::Int(i) => i.to_string(),
-        Form::Keyword(str) => format!(":{}", str),
+        Form::Keyword(str) => format_string(str),
         Form::List(l) => {
             let string_list: Vec<String> = l.iter().map(format).collect();
             format!("({})", string_list.join(" "))
@@ -17,7 +18,7 @@ fn format(form: &Form) -> String {
         Form::Map(m) => {
             let pairs: Vec<String> = m
                 .iter()
-                .map(|(k, v)| format!("{} {}", escape_str(k), format(v)))
+                .map(|(k, v)| format!("{} {}", format_string(k), format(v)))
                 .collect();
             format!("{{{}}}", pairs.join(" "))
         }
@@ -31,19 +32,26 @@ fn format(form: &Form) -> String {
     }
 }
 
-fn escape_str(source: &String) -> String {
-    let mut result = String::from('"');
-    for c in source.chars() {
-        if c == '\n' {
-            result.push('\\');
-            result.push('n');
-            continue;
+fn format_string(source: &String) -> String {
+    return if source.starts_with(KEYWORD_PREFIX) {
+        let mut result = source.to_string();
+        result.remove(0);
+        result.insert(0, ':');
+        result
+    } else {
+        let mut result = String::from('"');
+        for c in source.chars() {
+            if c == '\n' {
+                result.push('\\');
+                result.push('n');
+                continue;
+            }
+            if c == '"' || c == '\\' {
+                result.push('\\');
+            }
+            result.push(c);
         }
-        if c == '"' || c == '\\' {
-            result.push('\\');
-        }
-        result.push(c);
-    }
-    result.push('"');
-    result
+        result.push('"');
+        result
+    };
 }

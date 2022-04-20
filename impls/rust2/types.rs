@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+pub static KEYWORD_PREFIX: char = '\u{29E}';
+
 #[derive(Debug)]
 pub enum Form<'a> {
     False,
