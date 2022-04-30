@@ -1,4 +1,4 @@
-STEPS = step0_repl step1_read_print
+STEPS = step0_repl step1_read_print step2_eval
 
 all: $(STEPS)
 
@@ -7,10 +7,10 @@ all: $(STEPS)
 	cp target/release/$* $@
 
 STEP0_DEPS = Cargo.toml
-STEP1_DEPS = $(STEP0_DEPS)
+STEP1_DEPS = $(STEP0_DEPS) types.rs reader.rs printer.rs
 
 step0_repl: clean $(STEP0_DEPS)
-step1_read_print: clean $(STEP1_DEPS)
+step1_read_print step2_eval: clean $(STEP1_DEPS)
 
 .PHONY: clean
 

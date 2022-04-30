@@ -29,6 +29,7 @@ fn format(form: &Form) -> String {
                 .collect();
             format!("{{{}}}", pairs.join(" "))
         }
+        Form::Exec(_) => "exec".to_string(),
     }
 }
 
