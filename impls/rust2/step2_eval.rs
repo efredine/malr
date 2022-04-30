@@ -14,7 +14,11 @@ fn main() -> io::Result<()> {
     let mut lines = stdin.lock().lines();
 
     let mut env: Env = HashMap::new();
-    env.insert("+", map_int_add);
+    env.insert("+", int_add);
+    env.insert("-", int_minus);
+    env.insert("*", int_mul);
+    env.insert("/", int_div);
+
     while let Some(line_result) = read(&mut lines) {
         let line = line_result?;
         repl(&line, &env);
@@ -79,7 +83,26 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
     }
 }
 
-fn map_int_add<'a, 'r>(v: Vec<Form<'a>>) -> Result<Form<'r>, FormError> {
+fn int_add(v: Vec<Form>) -> Result<Form, FormError> {
+    int_operation(v, |a, b| a + b)
+}
+
+fn int_minus(v: Vec<Form>) -> Result<Form, FormError> {
+    int_operation(v, |a, b| a - b)
+}
+
+fn int_mul(v: Vec<Form>) -> Result<Form, FormError> {
+    int_operation(v, |a, b| a * b)
+}
+
+fn int_div(v: Vec<Form>) -> Result<Form, FormError> {
+    int_operation(v, |a, b| a / b)
+}
+
+fn int_operation<F>(v: Vec<Form>, f: F) -> Result<Form, FormError>
+where
+    F: Fn(i64, i64) -> i64,
+{
     let as_ints: Result<Vec<i64>, _> = v
         .iter()
         .map(|f| match f {
@@ -87,6 +110,6 @@ fn map_int_add<'a, 'r>(v: Vec<Form<'a>>) -> Result<Form<'r>, FormError> {
             _ => Err(FormError::InvalidType),
         })
         .collect();
-    let result: Option<i64> = as_ints?.into_iter().reduce(|a, b| a + b);
+    let result: Option<i64> = as_ints?.into_iter().reduce(f);
     result.map(|i| Form::Int(i)).ok_or(FormError::InvalidType)
 }
