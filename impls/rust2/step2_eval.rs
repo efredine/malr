@@ -87,7 +87,14 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
                 .map(|f| eval(f, env))
                 .collect::<Result<_, _>>()?,
         )),
-        // Form::Map(m) => eval(Form::Map(m), env),
+        Form::Map(m) => Ok(Form::Map(
+            m.into_iter()
+                .map(|(k, v)| match eval(v, env) {
+                    Ok(evaluated) => Ok((k, evaluated)),
+                    Err(e) => Err(e),
+                })
+                .collect::<Result<_, _>>()?,
+        )),
         _ => Ok(form),
     }
 }
