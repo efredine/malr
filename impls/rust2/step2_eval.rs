@@ -30,13 +30,10 @@ fn repl<'a, 'e: 'a>(line: &'a str, env: &'e Env<'e>) {
     let mut reader = Reader::new(line);
     while let Some(form_result) = reader.read_form() {
         match form_result {
-            Ok(form) => {
-                let evaluated_result = eval(form, &env);
-                match evaluated_result {
-                    Ok(form) => print(&form),
-                    Err(_) => println!("Evaluation Error"),
-                }
-            }
+            Ok(form) => match eval(form, &env) {
+                Ok(form) => print(&form),
+                Err(e) => println!("{:?}", e),
+            },
             Err(_) => {
                 println!("'.*\n.*(EOF|end of input|unbalanced).*'");
             }
@@ -51,6 +48,8 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
 }
 
 fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormError> {
+    // println!("evaluating");
+    // print(&form);
     match form {
         Form::List(l) => {
             if l.len() == 0 {
@@ -74,11 +73,14 @@ fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormEr
 }
 
 fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormError> {
+    // println!("eval AST");
+    // print(&form);
     match form {
         Form::Symbol(symbol) => match env.get(symbol) {
             None => Err(FormError::MissingSymbol),
             Some(exec) => Ok(Form::Exec(exec)),
         },
+        Form::List(l) => eval(Form::List(l), env),
         _ => Ok(form),
     }
 }
