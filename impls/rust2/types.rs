@@ -19,7 +19,7 @@ pub enum Form {
 }
 
 #[derive(Debug)]
-pub enum FormError {
+pub enum MalError {
     MissingOpeningBracket,
     MissingTrailingBracket,
     MissingTrailingDoubleQuote,
@@ -34,5 +34,5 @@ pub enum FormError {
     EvalListAstError,
 }
 
-pub type Exec = fn(Vec<Form>) -> Result<Form, FormError>;
+pub type Exec = fn(Vec<Form>) -> Result<Form, MalError>;
 pub type Env<'e> = HashMap<&'e str, Form>;
