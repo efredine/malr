@@ -33,6 +33,6 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
     lines.next()
 }
 
-fn eval<'a>(form: &'a Form) -> &'a Form<'a> {
+fn eval(form: &Form) -> &Form {
     form
 }

@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 pub static KEYWORD_PREFIX: char = '\u{29E}';
 
-#[derive(Clone)]
-pub enum Form<'a> {
+#[derive(Clone, Debug)]
+pub enum Form {
     Nil,
     False,
     True,
@@ -12,10 +12,10 @@ pub enum Form<'a> {
     String(Rc<str>),
     Keyword(Rc<str>),
     Symbol(Rc<str>),
-    List(Rc<[Form<'a>]>),
-    Vector(Rc<[Form<'a>]>),
-    Map(Rc<HashMap<String, Form<'a>>>),
-    Exec(&'a Exec),
+    List(Rc<[Form]>),
+    Vector(Rc<[Form]>),
+    Map(Rc<HashMap<String, Form>>),
+    Exec(Rc<Exec>),
 }
 
 #[derive(Debug)]
@@ -34,5 +34,5 @@ pub enum FormError {
     EvalListAstError,
 }
 
-pub type Exec = for<'a> fn(Vec<Form<'a>>) -> Result<Form<'a>, FormError>;
-pub type Env<'e> = HashMap<&'e str, Exec>;
+pub type Exec = fn(Vec<Form>) -> Result<Form, FormError>;
+pub type Env<'e> = HashMap<&'e str, Form>;

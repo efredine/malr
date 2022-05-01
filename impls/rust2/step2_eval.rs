@@ -4,7 +4,7 @@ mod types;
 
 use crate::printer::print;
 use crate::reader::Reader;
-use crate::types::{Env, Form, FormError};
+use crate::types::{Env, Exec, Form, FormError};
 use std::collections::HashMap;
 use std::io;
 use std::io::{BufRead, Lines, StdinLock, Write};
@@ -15,10 +15,10 @@ fn main() -> io::Result<()> {
     let mut lines = stdin.lock().lines();
 
     let mut env: Env = HashMap::new();
-    env.insert("+", int_add);
-    env.insert("-", int_minus);
-    env.insert("*", int_mul);
-    env.insert("/", int_div);
+    env.insert("+", Form::Exec(Rc::from(int_add as Exec)));
+    env.insert("-", Form::Exec(Rc::from(int_minus as Exec)));
+    env.insert("*", Form::Exec(Rc::from(int_mul as Exec)));
+    env.insert("/", Form::Exec(Rc::from(int_div as Exec)));
 
     while let Some(line_result) = read(&mut lines) {
         let line = line_result?;
@@ -48,7 +48,7 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
     lines.next()
 }
 
-fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormError> {
+fn eval<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, FormError> {
     // println!("evaluating");
     // print(&form);
     match form {
@@ -70,13 +70,13 @@ fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormEr
     }
 }
 
-fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormError> {
+fn eval_ast<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, FormError> {
     // println!("eval AST");
     // print(&form);
     match form {
         Form::Symbol(symbol) => match env.get(&*symbol) {
             None => Err(FormError::MissingSymbol),
-            Some(exec) => Ok(Form::Exec(exec)),
+            Some(form) => Ok(form.clone()),
         },
         Form::List(l) => Ok(Form::List(
             l.into_iter()
@@ -89,7 +89,7 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
                 .collect::<Result<_, _>>()?,
         )),
         Form::Map(m) => {
-            let evaluated: HashMap<String, Form<'a>> = m
+            let evaluated: HashMap<String, Form> = m
                 .iter()
                 .map(|(k, v)| match eval(v.clone(), env) {
                     Ok(evaluated) => Ok((k.to_string(), evaluated)),

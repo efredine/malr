@@ -29,7 +29,7 @@ impl<'a> Reader<'a> {
         Reader { iter }
     }
 
-    pub fn read_form(&mut self) -> Option<Result<Form<'a>, FormError>> {
+    pub fn read_form(&mut self) -> Option<Result<Form, FormError>> {
         match self.iter.peek() {
             None => None,
             Some(token) => match token.as_str() {
@@ -48,7 +48,7 @@ impl<'a> Reader<'a> {
         }
     }
 
-    fn read_list(&mut self, expected_close: &str) -> Option<Result<Form<'a>, FormError>> {
+    fn read_list(&mut self, expected_close: &str) -> Option<Result<Form, FormError>> {
         // consume opening character
         self.iter.next();
         let mut list: Vec<Form> = Vec::new();
@@ -81,7 +81,7 @@ impl<'a> Reader<'a> {
         Some(Err(FormError::MissingTrailingBracket))
     }
 
-    fn read_atom(&mut self) -> Option<Result<Form<'a>, FormError>> {
+    fn read_atom(&mut self) -> Option<Result<Form, FormError>> {
         self.iter.next().map(|token| match token.as_str() {
             "false" => Ok(Form::False),
             "true" => Ok(Form::True),
@@ -104,7 +104,7 @@ impl<'a> Reader<'a> {
         })
     }
 
-    fn read_macro(&mut self, macro_fn: &'static str) -> Option<Result<Form<'a>, FormError>> {
+    fn read_macro(&mut self, macro_fn: &'static str) -> Option<Result<Form, FormError>> {
         // consume macro token
         self.iter.next();
         return if let Some(argument_result) = self.read_form() {
@@ -117,7 +117,7 @@ impl<'a> Reader<'a> {
         };
     }
 
-    fn read_meta_macro(&mut self) -> Option<Result<Form<'a>, FormError>> {
+    fn read_meta_macro(&mut self) -> Option<Result<Form, FormError>> {
         // consume macro token
         self.iter.next();
         return if self.iter.peek().is_none() {
