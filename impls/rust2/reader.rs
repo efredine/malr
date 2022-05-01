@@ -93,14 +93,14 @@ impl<'a> Reader<'a> {
                     let mut str = keyword.to_string();
                     str.remove(0);
                     str.insert(0, KEYWORD_PREFIX);
-                    Ok(Form::Keyword(str))
+                    Ok(Form::Keyword(Rc::from(str)))
                 }
             }
             a_string if a_string.starts_with(r#"""#) => parse_string(a_string),
             numeric if numeric.parse::<i64>().is_ok() => {
                 Ok(Form::Int(Rc::from(numeric.parse::<i64>().unwrap())))
             }
-            symbol => Ok(Form::Symbol(symbol)),
+            symbol => Ok(Form::Symbol(Rc::from(symbol))),
         })
     }
 
@@ -109,7 +109,7 @@ impl<'a> Reader<'a> {
         self.iter.next();
         return if let Some(argument_result) = self.read_form() {
             Some(Ok(Form::List(vec![
-                Form::Symbol(macro_fn),
+                Form::Symbol(Rc::from(macro_fn)),
                 argument_result.ok()?,
             ])))
         } else {
@@ -130,7 +130,7 @@ impl<'a> Reader<'a> {
             if list.len() != 2 {
                 Some(Err(FormError::InvalidMetaMacro))
             } else {
-                list.push(Form::Symbol(WITH_META));
+                list.push(Form::Symbol(Rc::from(WITH_META)));
                 list.reverse();
                 Some(Ok(Form::List(list)))
             }
@@ -198,7 +198,7 @@ fn map_from_vec(list: Vec<Form>) -> Option<Result<Form, FormError>> {
         if let Some(value) = iter.next() {
             match key {
                 Form::String(s) => map.insert(s.to_string(), value),
-                Form::Keyword(s) => map.insert(s, value),
+                Form::Keyword(s) => map.insert(s.to_string(), value),
                 _ => return Some(Err(FormError::InvalidKey)),
             };
         } else {

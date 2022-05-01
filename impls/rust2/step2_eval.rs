@@ -74,7 +74,7 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
     // println!("eval AST");
     // print(&form);
     match form {
-        Form::Symbol(symbol) => match env.get(symbol) {
+        Form::Symbol(symbol) => match env.get(&*symbol) {
             None => Err(FormError::MissingSymbol),
             Some(exec) => Ok(Form::Exec(exec)),
         },
