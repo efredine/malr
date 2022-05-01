@@ -6,9 +6,9 @@ use crate::printer::print;
 use crate::reader::Reader;
 use crate::types::{Env, Exec, Form, MalError};
 use std::collections::HashMap;
-use std::io;
 use std::io::{BufRead, Lines, StdinLock, Write};
 use std::rc::Rc;
+use std::{i64, io};
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
@@ -49,14 +49,12 @@ fn read(lines: &mut Lines<StdinLock>) -> Option<std::io::Result<String>> {
 }
 
 fn eval<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, MalError> {
-    // println!("evaluating");
-    // print(&form);
     match form {
         Form::List(l) => {
             if let Form::List(evaluated) = eval_ast(Form::List(l), env)? {
                 if evaluated.len() > 1 {
                     match evaluated.get(0).unwrap() {
-                        Form::Exec(exec) => exec(evaluated[1..].to_vec()),
+                        Form::Exec(exec) => exec(&evaluated[1..]),
                         _ => Ok(Form::List(evaluated)),
                     }
                 } else {
@@ -71,8 +69,6 @@ fn eval<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, MalError> {
 }
 
 fn eval_ast<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, MalError> {
-    // println!("eval AST");
-    // print(&form);
     match form {
         Form::Symbol(symbol) => match env.get(&*symbol) {
             None => Err(MalError::MissingSymbol),
@@ -102,35 +98,33 @@ fn eval_ast<'e>(form: Form, env: &'e Env<'e>) -> Result<Form, MalError> {
     }
 }
 
-fn int_add(v: Vec<Form>) -> Result<Form, MalError> {
+fn int_add(v: &[Form]) -> Result<Form, MalError> {
     int_operation(v, |a, b| a + b)
 }
 
-fn int_minus(v: Vec<Form>) -> Result<Form, MalError> {
+fn int_minus(v: &[Form]) -> Result<Form, MalError> {
     int_operation(v, |a, b| a - b)
 }
 
-fn int_mul(v: Vec<Form>) -> Result<Form, MalError> {
+fn int_mul(v: &[Form]) -> Result<Form, MalError> {
     int_operation(v, |a, b| a * b)
 }
 
-fn int_div(v: Vec<Form>) -> Result<Form, MalError> {
+fn int_div(v: &[Form]) -> Result<Form, MalError> {
     int_operation(v, |a, b| a / b)
 }
 
-fn int_operation<F>(v: Vec<Form>, f: F) -> Result<Form, MalError>
+fn int_operation<F>(v: &[Form], f: F) -> Result<Form, MalError>
 where
     F: Fn(i64, i64) -> i64,
 {
     let as_ints: Vec<i64> = v
-        .into_iter()
+        .iter()
         .map(|f| match f {
             Form::Int(i) => Ok(*i),
             _ => Err(MalError::InvalidType),
         })
         .collect::<Result<Vec<i64>, _>>()?;
     let result: Option<i64> = as_ints.into_iter().reduce(f);
-    result
-        .map(|i| Form::Int(Rc::from(i)))
-        .ok_or(MalError::InvalidType)
+    result.map(|i| Form::Int(i)).ok_or(MalError::InvalidType)
 }

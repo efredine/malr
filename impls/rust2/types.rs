@@ -3,12 +3,12 @@ use std::rc::Rc;
 
 pub static KEYWORD_PREFIX: char = '\u{29E}';
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Form {
     Nil,
     False,
     True,
-    Int(Rc<i64>),
+    Int(i64),
     String(Rc<str>),
     Keyword(Rc<str>),
     Symbol(Rc<str>),
@@ -34,5 +34,5 @@ pub enum MalError {
     EvalListAstError,
 }
 
-pub type Exec = fn(Vec<Form>) -> Result<Form, MalError>;
+pub type Exec = fn(&[Form]) -> Result<Form, MalError>;
 pub type Env<'e> = HashMap<&'e str, Form>;
