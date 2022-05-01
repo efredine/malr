@@ -52,21 +52,17 @@ fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormEr
     // print(&form);
     match form {
         Form::List(l) => {
-            if l.len() == 0 {
-                Ok(Form::List(l))
-            } else {
-                if let Form::List(evaluated) = eval_ast(Form::List(l), env)? {
-                    if evaluated.len() > 1 {
-                        match evaluated.get(0).unwrap() {
-                            Form::Exec(exec) => exec(evaluated[1..].to_vec()),
-                            _ => Ok(Form::List(evaluated)),
-                        }
-                    } else {
-                        Ok(Form::List(evaluated))
+            if let Form::List(evaluated) = eval_ast(Form::List(l), env)? {
+                if evaluated.len() > 1 {
+                    match evaluated.get(0).unwrap() {
+                        Form::Exec(exec) => exec(evaluated[1..].to_vec()),
+                        _ => Ok(Form::List(evaluated)),
                     }
                 } else {
-                    Err(FormError::EvalListAstError)
+                    Ok(Form::List(evaluated))
                 }
+            } else {
+                Err(FormError::EvalListAstError)
             }
         }
         _ => eval_ast(form, env),
