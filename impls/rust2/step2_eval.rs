@@ -80,12 +80,12 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
         },
         Form::List(l) => Ok(Form::List(
             l.into_iter()
-                .map(|f| eval(f, env))
+                .map(|f| eval(f.clone(), env))
                 .collect::<Result<_, _>>()?,
         )),
         Form::Vector(l) => Ok(Form::Vector(
             l.into_iter()
-                .map(|f| eval(f, env))
+                .map(|f| eval(f.clone(), env))
                 .collect::<Result<_, _>>()?,
         )),
         Form::Map(m) => Ok(Form::Map(

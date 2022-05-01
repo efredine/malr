@@ -59,11 +59,11 @@ impl<'a> Reader<'a> {
                     self.iter.next();
                     return if close == expected_close {
                         if expected_close == VEC_RIGHT {
-                            Some(Ok(Form::Vector(list)))
+                            Some(Ok(Form::Vector(Rc::from(list))))
                         } else if expected_close == MAP_RIGHT {
                             map_from_vec(list)
                         } else {
-                            Some(Ok(Form::List(list)))
+                            Some(Ok(Form::List(Rc::from(list))))
                         }
                     } else {
                         Some(Err(FormError::MissingTrailingBracket))
@@ -108,10 +108,10 @@ impl<'a> Reader<'a> {
         // consume macro token
         self.iter.next();
         return if let Some(argument_result) = self.read_form() {
-            Some(Ok(Form::List(vec![
+            Some(Ok(Form::List(Rc::from(vec![
                 Form::Symbol(Rc::from(macro_fn)),
                 argument_result.ok()?,
-            ])))
+            ]))))
         } else {
             Some(Err(FormError::MissingMacroArgument))
         };
@@ -132,7 +132,7 @@ impl<'a> Reader<'a> {
             } else {
                 list.push(Form::Symbol(Rc::from(WITH_META)));
                 list.reverse();
-                Some(Ok(Form::List(list)))
+                Some(Ok(Form::List(Rc::from(list))))
             }
         };
     }

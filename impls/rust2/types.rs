@@ -12,8 +12,8 @@ pub enum Form<'a> {
     String(Rc<str>),
     Keyword(Rc<str>),
     Symbol(Rc<str>),
-    List(Vec<Form<'a>>),
-    Vector(Vec<Form<'a>>),
+    List(Rc<[Form<'a>]>),
+    Vector(Rc<[Form<'a>]>),
     Map(HashMap<String, Form<'a>>),
     Exec(&'a Exec),
 }
