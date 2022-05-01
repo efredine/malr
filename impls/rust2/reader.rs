@@ -205,5 +205,5 @@ fn map_from_vec(list: Vec<Form>) -> Option<Result<Form, FormError>> {
             return Some(Err(FormError::UnBalancedMap));
         };
     }
-    Some(Ok(Form::Map(map)))
+    Some(Ok(Form::Map(Rc::from(map))))
 }

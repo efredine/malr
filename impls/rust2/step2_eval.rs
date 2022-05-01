@@ -88,14 +88,16 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
                 .map(|f| eval(f.clone(), env))
                 .collect::<Result<_, _>>()?,
         )),
-        Form::Map(m) => Ok(Form::Map(
-            m.into_iter()
-                .map(|(k, v)| match eval(v, env) {
-                    Ok(evaluated) => Ok((k, evaluated)),
+        Form::Map(m) => {
+            let evaluated: HashMap<String, Form<'a>> = m
+                .iter()
+                .map(|(k, v)| match eval(v.clone(), env) {
+                    Ok(evaluated) => Ok((k.to_string(), evaluated)),
                     Err(e) => Err(e),
                 })
-                .collect::<Result<_, _>>()?,
-        )),
+                .collect::<Result<HashMap<_, _>, _>>()?;
+            Ok(Form::Map(Rc::from(evaluated)))
+        }
         _ => Ok(form),
     }
 }
