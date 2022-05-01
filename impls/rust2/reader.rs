@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use regex::{Match, Regex};
 use std::collections::HashMap;
 use std::iter::Peekable;
+use std::rc::Rc;
 use std::vec::IntoIter;
 
 pub struct Reader<'a> {
@@ -97,7 +98,7 @@ impl<'a> Reader<'a> {
             }
             a_string if a_string.starts_with(r#"""#) => parse_string(a_string),
             numeric if numeric.parse::<i64>().is_ok() => {
-                Ok(Form::Int(numeric.parse::<i64>().unwrap()))
+                Ok(Form::Int(Rc::from(numeric.parse::<i64>().unwrap())))
             }
             symbol => Ok(Form::Symbol(symbol)),
         })

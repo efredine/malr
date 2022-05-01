@@ -8,6 +8,7 @@ use crate::types::{Env, Form, FormError};
 use std::collections::HashMap;
 use std::io;
 use std::io::{BufRead, Lines, StdinLock, Write};
+use std::rc::Rc;
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
@@ -119,13 +120,15 @@ fn int_operation<F>(v: Vec<Form>, f: F) -> Result<Form, FormError>
 where
     F: Fn(i64, i64) -> i64,
 {
-    let as_ints: Result<Vec<i64>, _> = v
-        .iter()
+    let as_ints: Vec<i64> = v
+        .into_iter()
         .map(|f| match f {
             Form::Int(i) => Ok(*i),
             _ => Err(FormError::InvalidType),
         })
-        .collect();
-    let result: Option<i64> = as_ints?.into_iter().reduce(f);
-    result.map(|i| Form::Int(i)).ok_or(FormError::InvalidType)
+        .collect::<Result<Vec<i64>, _>>()?;
+    let result: Option<i64> = as_ints.into_iter().reduce(f);
+    result
+        .map(|i| Form::Int(Rc::from(i)))
+        .ok_or(FormError::InvalidType)
 }

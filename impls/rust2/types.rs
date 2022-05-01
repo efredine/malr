@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 pub static KEYWORD_PREFIX: char = '\u{29E}';
 
@@ -7,7 +8,7 @@ pub enum Form<'a> {
     Nil,
     False,
     True,
-    Int(i64),
+    Int(Rc<i64>),
     String(String),
     Keyword(String),
     Symbol(&'a str),
