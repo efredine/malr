@@ -168,7 +168,7 @@ fn parse_string(a_str: &str) -> Result<Form, FormError> {
     while let Some(cur) = iter.next() {
         if iter.peek().is_none() {
             if cur == '"' {
-                return Ok(Form::String(result));
+                return Ok(Form::String(Rc::from(result)));
             } else {
                 break;
             }
@@ -197,7 +197,7 @@ fn map_from_vec(list: Vec<Form>) -> Option<Result<Form, FormError>> {
     while let Some(key) = iter.next() {
         if let Some(value) = iter.next() {
             match key {
-                Form::String(s) => map.insert(s, value),
+                Form::String(s) => map.insert(s.to_string(), value),
                 Form::Keyword(s) => map.insert(s, value),
                 _ => return Some(Err(FormError::InvalidKey)),
             };

@@ -9,7 +9,7 @@ pub enum Form<'a> {
     False,
     True,
     Int(Rc<i64>),
-    String(String),
+    String(Rc<str>),
     Keyword(String),
     Symbol(&'a str),
     List(Vec<Form<'a>>),

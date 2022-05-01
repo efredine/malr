@@ -33,7 +33,7 @@ fn format(form: &Form) -> String {
     }
 }
 
-fn format_string(source: &String) -> String {
+fn format_string(source: &str) -> String {
     return if source.starts_with(KEYWORD_PREFIX) {
         let mut result = source.to_string();
         result.remove(0);
