@@ -55,16 +55,17 @@ fn eval<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, FormEr
             if l.len() == 0 {
                 Ok(Form::List(l))
             } else {
-                let evaluated_result: Result<Vec<Form>, FormError> =
-                    l.into_iter().map(|f| eval_ast(f, env)).collect();
-                let evaluated = evaluated_result?;
-                if evaluated.len() > 1 {
-                    match evaluated.get(0).unwrap() {
-                        Form::Exec(exec) => exec(evaluated[1..].to_vec()),
-                        _ => Ok(Form::List(evaluated)),
+                if let Form::List(evaluated) = eval_ast(Form::List(l), env)? {
+                    if evaluated.len() > 1 {
+                        match evaluated.get(0).unwrap() {
+                            Form::Exec(exec) => exec(evaluated[1..].to_vec()),
+                            _ => Ok(Form::List(evaluated)),
+                        }
+                    } else {
+                        Ok(Form::List(evaluated))
                     }
                 } else {
-                    Ok(Form::List(evaluated))
+                    Err(FormError::EvalListAstError)
                 }
             }
         }
@@ -80,7 +81,17 @@ fn eval_ast<'a, 'e: 'a>(form: Form<'a>, env: &'e Env<'e>) -> Result<Form<'a>, Fo
             None => Err(FormError::MissingSymbol),
             Some(exec) => Ok(Form::Exec(exec)),
         },
-        Form::List(l) => eval(Form::List(l), env),
+        Form::List(l) => Ok(Form::List(
+            l.into_iter()
+                .map(|f| eval(f, env))
+                .collect::<Result<_, _>>()?,
+        )),
+        Form::Vector(l) => Ok(Form::Vector(
+            l.into_iter()
+                .map(|f| eval(f, env))
+                .collect::<Result<_, _>>()?,
+        )),
+        // Form::Map(m) => eval(Form::Map(m), env),
         _ => Ok(form),
     }
 }

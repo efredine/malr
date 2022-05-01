@@ -30,6 +30,7 @@ pub enum FormError {
     InvalidMetaMacro,
     InvalidType,
     MissingSymbol,
+    EvalListAstError,
 }
 
 pub type Exec = for<'a> fn(Vec<Form<'a>>) -> Result<Form<'a>, FormError>;
